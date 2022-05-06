@@ -38,7 +38,7 @@ namespace CosmosDBIntegrationWithDotNetCore
             }
             else
             {
-                app.UseExceptionHandler("/Home/Error");
+                app.UseExceptionHandler("/Product/Error");
             }
             app.UseStaticFiles();
 
