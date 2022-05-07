@@ -30,6 +30,8 @@ namespace CosmosDBIntegrationWithDotNetCore.Controllers
         public async Task<IActionResult> Create(Product item)
         {
             item.Id = Guid.NewGuid().ToString();
+            Random random = new Random();
+            item.ProductId = random.Next();
             await _repository.AddProductAsync(item);
             return RedirectToAction("Index");
         }

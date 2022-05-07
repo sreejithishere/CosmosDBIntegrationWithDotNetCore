@@ -15,34 +15,57 @@ namespace DataAccess
         {
             _container = dbClient.GetContainer(databaseName, containerName);
         }
-        public Task AddProductAsync(Product item)
+        public async Task AddProductAsync(Product item)
         {
-            throw new NotImplementedException();
+            await _container.CreateItemAsync<Product>(item, new PartitionKey(item.Id));
         }
 
-        public Task DeleteProductAsync(string id)
+        public async Task DeleteProductAsync(string id)
         {
-            throw new NotImplementedException();
+            await _container.DeleteItemAsync<Product>(id, new PartitionKey(id));
         }
 
-        public Task<IEnumerable<Product>> GetAllProductsAsync()
+        public async Task<IEnumerable<Product>> GetAllProductsAsync()
         {
-            throw new NotImplementedException();
+            var query = _container.GetItemQueryIterator<Product>();
+            List<Product> results = new List<Product>();
+            while (query.HasMoreResults)
+            {
+                var response = await query.ReadNextAsync();
+                results.AddRange(response.ToList());
+            }
+            return results;
         }
 
-        public Task<Product> GetProductByIdAsync(string id)
+        public async Task<Product> GetProductByIdAsync(string id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                ItemResponse<Product> response = await _container.ReadItemAsync<Product>(id, new
+                PartitionKey(id));
+                return response.Resource;
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
+            }
         }
 
-        public Task<IEnumerable<Product>> GetProductsAsync(string query)
+        public async Task<IEnumerable<Product>> GetProductsAsync(string queryString)
         {
-            throw new NotImplementedException();
+            var query = _container.GetItemQueryIterator<Product>(new QueryDefinition(queryString));
+            List<Product> results = new List<Product>();
+            while (query.HasMoreResults)
+            {
+                var response = await query.ReadNextAsync();
+                results.AddRange(response.ToList());
+            }
+            return results;
         }
 
-        public Task UpdateProductAsync(string id, Product item)
+        public async Task UpdateProductAsync(string id, Product item)
         {
-            throw new NotImplementedException();
+            await _container.UpsertItemAsync<Product>(item, new PartitionKey(id));
         }
     }
 }
